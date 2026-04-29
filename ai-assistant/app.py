@@ -42,3 +42,23 @@ def save_logs(filepath: str, logs: list) -> None:
     json_path = Path(filepath)
     with open(json_path, "w") as f:
         json.dump(logs, f, indent=2)
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+logs = load_logs("chat_logs.json")
+for log in logs:
+    st.session_state.messages.append({
+        "role": "user",
+        "content": log["user_message"]
+    })
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": log["assistant_message"]
+    })
+
+if len(st.session_state.messages) == 0:
+    st.session_state.messages.append({
+        "role": "ai-assistant",
+        "content": "Hi! Ask me a question."
+    })
