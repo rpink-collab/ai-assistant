@@ -62,3 +62,48 @@ if len(st.session_state.messages) == 0:
         "role": "ai-assistant",
         "content": "Hi! Ask me a question."
     })
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+    logs = logger.load_logs()
+    for log in logs:
+        st.session_state.messages.append(
+            {"role": "user", "content": log["user_message"]}
+        )
+        st.session_state.messages.append(
+            {"role": "assistant", "content": log["assistant_message"]}
+        )
+
+    if len(st.session_state.messages) == 0:
+        st.session_state.messages.append({
+            "role": "assistant",
+            "content": "Hi! Ask me a question about the order data."
+        })
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+user_input = st.chat_input("Type your question here...")
+
+if user_input:
+    st.session_state.messages.append(
+        {"role": "user", "content": user_input}
+    )
+    with st.chat_message("user"):
+        st.markdown(user_input)
+with st.chat_message("assistant"):
+    with st.spinner("Thinking..."):
+        response_text = bot.get_ai_response(
+            st.session_state.messages
+        )
+        st.markdown(response_text)
+
+st.session_state.messages.append({
+    "role": "assistant",
+    "content": response_text
+})
+
+logs = logger.load_logs()
+logs.append({"user_message": user_input, "assistant_message": response_text})
+logger.save_logs(logs)
